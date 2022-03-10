@@ -1,0 +1,97 @@
+service: serverless-aws-graphql-book
+
+package:
+  individually: true
+  include:
+    - src/**
+
+provider:
+  name: aws
+  profile: ${env:profile}
+  runtime: nodejs14.x
+  stage: ${env:stage}
+  region: eu-north-1
+  timeout: 30
+  apiName: ${self:service.name}-${self:provider.stage}
+  environment:
+    ITEM_TABLE: ${self:service}-items-${self:provider.stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - lambda:InvokeFunction # Added this like mentioned above
+      Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.ITEM_TABLE}'
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+      Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.ITEM_TABLE}/index/*'
+
+  apiGateway:
+    shouldStartNameWithService: true
+
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true
+    packager: 'npm' # Packager that will be used to package your external modules
+  prune:
+    automatic: true
+    number: 5
+
+functions:
+  graphql:
+    handler: src/handlers/graphql.graphql
+    memorySize: 4096
+    events:
+      - http:
+          path: ${env:api_prefix}/graphql
+          method: get
+          cors: true
+      - http:
+          path: ${env:api_prefix}/graphql
+          method: post
+          cors: true
+resources:
+  Resources:
+    ItemsTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+          - AttributeName: GSI1PK
+            AttributeType: S
+          - AttributeName: GSI1SK
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+          - IndexName: GSI1
+            KeySchema:
+              - AttributeName: GSI1PK
+                KeyType: HASH
+              - AttributeName: GSI1SK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.ITEM_TABLE}
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+  - serverless-dotenv-plugin
+  - serverless-prune-plugin

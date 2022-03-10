@@ -1,0 +1,65 @@
+{
+  "name": "serverless-aws-graphql-book",
+  "version": "1.0.1",
+  "main": "src/handler.js",
+  "license": "MIT",
+  "scripts": {
+    "deploy": "sls deploy --stage development",
+    "deploy:production": "sls deploy --stage production",
+    "lint": "eslint src --ext ts,js --no-ignore --fix",
+    "serve": "sls offline -P 4000",
+    "start": "node -e js,ts,jsx,tsx -x npm run serve",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "build": "sls webpack",
+    "setup": "./bin/setup",
+    "graphql-codegen": "graphql-codegen --config codegen.yml"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^2.6.2",
+    "@graphql-codegen/typescript": "^2.4.7",
+    "@types/aws-lambda": "^8.10.93",
+    "@types/jest": "^25.2.3",
+    "@types/uuid": "^8.3.4",
+    "@typescript-eslint/eslint-plugin": "^3.10.1",
+    "@typescript-eslint/parser": "^3.10.1",
+    "aws-sdk": "^2.1090.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.15.0",
+    "husky": "^4.3.8",
+    "lint-staged": "^10.5.4",
+    "nodemon": "^2.0.0",
+    "prettier": "^2.5.1",
+    "serverless": "^1.83.3",
+    "serverless-dotenv-plugin": "^2.4.2",
+    "serverless-offline": "^5.12.1",
+    "serverless-plugin-warmup": "^4.9.0",
+    "serverless-prune-plugin": "^1.6.1",
+    "serverless-webpack": "^5.6.1",
+    "ts-jest": "^25.5.1",
+    "ts-loader": "^6.2.2",
+    "typescript": "^3.6.3",
+    "webpack": "^4.46.0",
+    "webpack-node-externals": "^1.7.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{js,ts}": [
+      "npm run lint",
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "dependencies": {
+    "apollo-server-core": "^3.5.0",
+    "apollo-server-lambda": "^3.5.0",
+    "aws-lambda": "^1.0.7",
+    "graphql": "^15.8.0",
+    "ramda": "^0.28.0",
+    "uuid": "^8.3.2"
+  }
+}
