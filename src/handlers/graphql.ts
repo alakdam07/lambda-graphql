@@ -1,14 +1,25 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
 import {
   ApolloServer,
   AuthenticationError,
   ForbiddenError,
+  gql,
 } from 'apollo-server-lambda';
-import schema from '../graphql/schema';
-import resolvers from '../resolvers';
+
 import * as R from 'ramda';
-//import { APIGatewayProxyEvent, Context } from 'aws-lambda';
+
+const typeDefs = gql`
+  type Query {
+    hello: String
+  }
+`;
+
+const resolvers = {
+  Query: {
+    hello: () => 'Hello world!',
+  },
+};
+
 export const authToken = (token: string) => {
   if (token === 'HELLO') {
     return true;
@@ -18,7 +29,7 @@ export const authToken = (token: string) => {
 };
 
 const server = new ApolloServer({
-  typeDefs: schema,
+  typeDefs,
   resolvers,
   debug: false,
   plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
